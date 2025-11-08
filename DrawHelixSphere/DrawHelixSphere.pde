@@ -25,7 +25,7 @@ float phase = 0;  // sets the rotational phase of the first bp, goes from 0 to 1
 float clash_thresh=0.6;
 float checksum=0;  //checksum used to detect when key variables are changed
 float ellipse=1.5; //this number deformes the sphere
-float trim= 10;
+float trim_angle= 10;
 float fine_tune = 0; //fine tune spacing
 
 int clashmodeon=1; float wrapinvert=1;
@@ -126,7 +126,7 @@ void draw() {
   //   helixspace=helixspace*sqrt(ellipse);
    if (clash_mode) {clashmodeon=1;} else {clashmodeon=0;}
    
-   if (diameter*wrapinvert+trim+phase+clash_thresh+len+polymer+clashmodeon+ellipse+fine_tune-checksum!=0) {
+   if (diameter*wrapinvert+trim_angle+phase+clash_thresh+len+polymer+clashmodeon+ellipse+fine_tune-checksum!=0) {
      calculatehelix();  //go calculate the helix, but only if variables have changed the checksum!
    }
 
@@ -181,54 +181,72 @@ void draw() {
 
 void keyPressed() { 
   if (key == CODED) {
-    if (keyCode == LEFT) {diameter+=-.01; cp5.getController("diameter").setValue(diameter);}
-    if (keyCode == RIGHT) {diameter+=.01;cp5.getController("diameter").setValue(diameter);}
-    if (keyCode == DOWN) {phase+=-.01;cp5.getController("phase").setValue(phase);}
-    if (keyCode == UP) {phase+=.01;cp5.getController("phase").setValue(phase);}    
-    if (keyCode == SHIFT) {
-          output.println("Polymer type (1=RNA, 2=DNA): " + polymer);
-          output.println("Polymer length = " + len + " base pairs");
-          output.println("Phase = " + phase);
-          output.println("Diameter = " + diameter + " nm");
-          output.println("Egg-Shape Ratio = " + ellipse);
-          
-       for (int i=1; i<floor(phos_one[len][5])+1; i++) {
-             output.println("ROW " + (i) + " " + wraplength[i+1]);
-       }
-       
-       for (int i=0; i<len+1; i++) {
-          int posone=floor(clashpos[i][0]); int postwo=floor(clashpos[i][1]); float posthree=clashpos[i][2];
-          int pos_in_row1=floor(floor(clashpos[i][0])-wrapcount[floor(phos_one[i][5])]+1);
-          int pos_in_row2=floor(floor(clashpos[i][1])-wrapcount[floor(phos_one[floor(clashpos[i][1])][5])]+1);
-        //  if (clashpos[i][0]!=0) { output.println(posone + ", " + postwo + ", " + posthree + ", " + phos_one[i][3] + "°, " + phos_one[i][4] +  "°, ring# " + phos_one[i][5]);}
-          if (clashpos[i][0]!=0) { output.println(posone + ", " + postwo + ", " + posthree + ", Row " + floor(phos_one[i][5]) + " (" + pos_in_row1 + "), Row " + floor(phos_one[floor(clashpos[i][1])][5]) + " (" + pos_in_row2 + ")");}
-       }
-       
-       /* output.println("BEGIN PDB coordinate output");   //PDB output currently muted
-          output.println("Main Phosphate strand");
-       for (int i=1; i<len+1; i++) {
-          float posone=phos_one[i][0]; float postwo=phos_one[i][1]; float posthree=phos_one[i][2];
-          output.println(i + ", " + posone + ", " + postwo + ", " + posthree);
-       }
-          output.println(" ");
-          output.println("Antiparallel Phosphate strand (backwards direction)");
-       for (int i=1; i<len+1; i++) {
-          float posone=phos_two[i][0]; float postwo=phos_two[i][1]; float posthree=phos_two[i][2];
-          output.println(i + ", " + posone + ", " + postwo + ", " + posthree);
-       }
-          output.println(" ");
-          output.println("Center axis strand");
-       for (int i=1; i<len+1; i++) {
-          float posone=centerax[i][0]; float postwo=centerax[i][1]; float posthree=centerax[i][2];
-          output.println(i + ", " + posone + ", " + postwo + ", " + posthree);
-       } */
-              
-          output.flush();  // Writes the remaining data to the file
-          output.close();  // Finishes the file
-          println("output complete!");  
+    if (keyCode == LEFT)  { diameter -= 0.01; cp5.getController("diameter").setValue(diameter); }
+    else if (keyCode == RIGHT) { diameter += 0.01; cp5.getController("diameter").setValue(diameter); }
+    else if (keyCode == DOWN)  { phase -= 0.01; cp5.getController("phase").setValue(phase); }
+    else if (keyCode == UP)    { phase += 0.01; cp5.getController("phase").setValue(phase); }
+    else if (keyCode == SHIFT) {
+      exportCoordinates(); 
     }
   }
 }
+
+void exportCoordinates() {
+  PrintWriter output = createWriter("positions.txt");
+
+  output.println("Polymer type (1=RNA, 2=DNA): " + polymer);
+  output.println("Polymer length = " + len + " base pairs");
+  output.println("Phase = " + phase);
+  output.println("Diameter = " + diameter + " nm");
+  output.println("Egg-Shape Ratio = " + ellipse);
+  output.println("BEGIN COORDINATE OUTPUT");
+
+  String[] Chains = {
+    "A","B","C","D","E","F","G","H","I","J","K","L",
+    "M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z",
+    "0","1","2","3","4","5","6","7","8","9",
+    "a","b","c","d","e","f","g","h","i","j","k","l",
+    "m","n","o","p","q","r","s","t","u","v","w","x","y","z"
+  };
+
+  int chain_count = 0;
+
+  for (int i = 1; i <= len; i++) {
+    output.println("LINE\t" + Chains[chain_count] + "\t" + i + "\t" 
+      + phos_one[i][0] + "\t" + phos_one[i][1] + "\t" + phos_one[i][2]);
+  }
+  chain_count++;
+
+  for (int i = 1; i <= len; i++) {
+    output.println("LINE\t" + Chains[chain_count] + "\t" + i + "\t" 
+      + phos_two[i][0] + "\t" + phos_two[i][1] + "\t" + phos_two[i][2]);
+  }
+  chain_count++;
+
+  for (int i = 1; i <= len; i++) {
+    output.println("DOT\t" + Chains[chain_count] + "\t" + i + "\t" 
+      + sugar_one[i][0] + "\t" + sugar_one[i][1] + "\t" + sugar_one[i][2]);
+  }
+  chain_count++;
+
+  for (int i = 1; i <= len; i++) {
+    output.println("DOT\t" + Chains[chain_count] + "\t" + i + "\t" 
+      + sugar_two[i][0] + "\t" + sugar_two[i][1] + "\t" + sugar_two[i][2]);
+  }
+  chain_count++;
+
+  for (int i = 1; i <= len; i++) {
+    output.println("DOT\t" + Chains[chain_count] + "\t" + i + "\t" 
+      + centerax[i][0] + "\t" + centerax[i][1] + "\t" + centerax[i][2]);
+  }
+
+  output.println("END COORDINATE OUTPUT");
+  output.flush();
+  output.close();
+  println("output complete! → positions.txt saved.");
+}
+
+
 
 void drawhelix()
 {        

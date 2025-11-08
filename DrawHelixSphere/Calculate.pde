@@ -11,7 +11,7 @@ void calculatehelix()
   float helixangle=0;      // sets the initial helix angle
   float aphelixangle=axis; //initialize the antiparallel angle to axis
   float aptorusangle;  float sugarangle=0;  float apsugarangle=0;  float centerangle;  torusangle=0;
-  com_x=0; com_y=0; com_z=0; latitude=trim;
+  com_x=0; com_y=0; com_z=0; latitude=trim_angle;
   
   len=7500;
   
@@ -42,7 +42,7 @@ void calculatehelix()
 
     latitude+=stepsize;
     
-    if (latitude>(180-trim)) {len=i;}
+    if (latitude>(180-trim_angle)) {len=i;}
     
     torus_rad=sphere_rad*sin(latitude*DEG_TO_RAD);
     
@@ -55,8 +55,8 @@ void calculatehelix()
     phos_one[i][1] = cos(torusangle*DEG_TO_RAD)*(radius*cos(helixangle*DEG_TO_RAD)+torus_rad);   //y
     phos_one[i][2] = sin(helixangle*DEG_TO_RAD)*radius + ellipse*sphere_rad*cos(latitude*DEG_TO_RAD);   //z
     phos_one[i][3] = -(latitude-90)*wrapinvert;
-    phos_one[i][4] = ((torusangle-2*wraps*trim)*wrapinvert) % 360;
-    phos_one[i][5] = ceil((torusangle-2*wraps*trim)*wrapinvert/360);  //-2*wraps*trim subtracts out the initial torusangle and makes the longitude set to 0
+    phos_one[i][4] = ((torusangle-2*wraps*trim_angle)*wrapinvert) % 360;
+    phos_one[i][5] = ceil((torusangle-2*wraps*trim_angle)*wrapinvert/360);  //-2*wraps*trim_angle subtracts out the initial torusangle and makes the longitude set to 0
 
     if (floor(phos_one[i][5])>floor(phos_one[i-1][5])) {wrapcount[floor(phos_one[i][5])]=i;}
 
@@ -167,7 +167,7 @@ void calculatehelix()
       } //end clash mode
 
    //now reset the check variables so that the data is only redrawn when the variables are changed again//   diameter_check=diameter*wrapinvert; phase_check=phase; clash_threshcheck=clash_thresh; len_check=len; pol_check=polymer; clashmodecheck=clashmodeon;
-   checksum=diameter*wrapinvert+phase+clash_thresh+len+polymer+clashmodeon+ellipse+trim+fine_tune;
+   checksum=diameter*wrapinvert+phase+clash_thresh+len+polymer+clashmodeon+ellipse+trim_angle+fine_tune;
    
    //update the wrapwidth table now that the calculations are complete
    wrapcount[floor(phos_one[len][5])+1]=len;

@@ -30,11 +30,11 @@ void gui() {
           cp5.getController("fine_tune").getValueLabel().align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE).setPaddingX(0);
 
 
-          cp5.addSlider("trim",10,89,220,20,150,15)
+          cp5.addSlider("trim_angle",10,89,220,20,150,15)
              .setLabel("Trim Angle")
              .setValue(10); 
-          cp5.getController("trim").getCaptionLabel().align(ControlP5.CENTER, ControlP5.BOTTOM_OUTSIDE).setPaddingX(0);
-          cp5.getController("trim").getValueLabel().align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE).setPaddingX(0);
+          cp5.getController("trim_angle").getCaptionLabel().align(ControlP5.CENTER, ControlP5.BOTTOM_OUTSIDE).setPaddingX(0);
+          cp5.getController("trim_angle").getValueLabel().align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE).setPaddingX(0);
 
 
           cp5.addSlider("diameter",5,45,220,60,150,15)
